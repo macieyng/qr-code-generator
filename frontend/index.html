@@ -11,8 +11,8 @@
       href="https://cdn.jsdelivr.net/npm/@tabler/core@latest/dist/css/tabler.min.css"
     />
     <script src="https://unpkg.com/htmx.org@1.8.4"></script>
-    <script src="https://unpkg.com/htmx.org/dist/ext/client-side-templates.js"></script>
     <script src="./nunjucks.js"></script>
+    <script src="./client-side-templates.js"></script>
     <script src="./main.js"></script>
   </head>
 
@@ -25,13 +25,21 @@
             class="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0 pe-md-3"
           >
             <a href="index.html">
-              <img
-                src="./img/logo.svg"
-                width="110"
-                height="32"
-                alt="Tabler"
-                class="navbar-brand-image"
-              />
+              <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-qrcode" style="width: 40px; height: 40px" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                <rect x="4" y="4" width="6" height="6" rx="1"></rect>
+                <line x1="7" y1="17" x2="7" y2="17.01"></line>
+                <rect x="14" y="4" width="6" height="6" rx="1"></rect>
+                <line x1="7" y1="7" x2="7" y2="7.01"></line>
+                <rect x="4" y="14" width="6" height="6" rx="1"></rect>
+                <line x1="17" y1="7" x2="17" y2="7.01"></line>
+                <line x1="14" y1="14" x2="17" y2="14"></line>
+                <line x1="20" y1="14" x2="20" y2="14.01"></line>
+                <line x1="14" y1="14" x2="14" y2="17"></line>
+                <line x1="14" y1="20" x2="17" y2="20"></line>
+                <line x1="17" y1="17" x2="20" y2="17"></line>
+                <line x1="20" y1="17" x2="20" y2="20"></line>
+              </svg>
             </a>
           </h1>
           <h1>QR Code Generator</h1>
@@ -49,22 +57,46 @@
                 <div>
                   <div
                     hx-trigger="load, every 60s"
-                    hx-get=""
+                    hx-get="http://127.0.0.1:8000/qr?page=1&page_size=10"
                     nunjucks-template="qr-list"
                     hx-target="#generated-qr-codes"
                     hx-swap="innerHTML"
                   ></div>
                   <script id="qr-list" type="nunjucks">
                     {% for item in items %}
-                      <div class="list-group-item accordion-item">
-                        <div class="row g-2 align-items-center">
-                          <div class="col-auto">
-                            <img src="data:image/png;base64,{{ item.image }}" class="rounded" alt="{{ item.target_url }}" width="40" height="40">
-                          </div>
-                          <div class="col">
-                            {{ item.target_url }}
-                            <div class="text-muted">
-                              Scan counter: {{ item.scan_counter }}
+                      <div class="col-xl-4 col-sm-6">
+                        <div class="card">
+                          <div class="row row-0">
+                            <div class="col-md-3 col-sm-auto col-4">
+                              <!-- Photo -->
+                              <img src="data:image/png;base64,{{ item.image }}" class="rounded" alt="{{ item.target_url }}">
+                            </div>
+                            <div class="col-md-9 col-sm-auto col-8">
+                              <div class="card-body">
+                                <h3 class="card-title">
+                                  <img src="{{ item.target_url | getFavicon(64) }}" class="me-2" alt="{{ item.target_url }}" width="20">
+                                  {{ item.name | shortenUrl}}
+                                </h3>
+                                <div>
+                                  <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-scan me-2 text-muted" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                                    <path d="M4 7v-1a2 2 0 0 1 2 -2h2"></path>
+                                    <path d="M4 17v1a2 2 0 0 0 2 2h2"></path>
+                                    <path d="M16 4h2a2 2 0 0 1 2 2v1"></path>
+                                    <path d="M16 20h2a2 2 0 0 0 2 -2v-1"></path>
+                                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                                  </svg>
+                                  Scan counter: {{ item.scan_counter }}
+                                </div>
+                                <div class="mt-1">
+                                  <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-link me-2 text-muted" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                                    <path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5"></path>
+                                    <path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5"></path>
+                                  </svg>
+                                  <a href="{{ item.target_url }}" target="_blank" rel="noopener noreferrer">{{ item.target_url | shortenUrl(1) }}</a>
+                                </div>
+                              </div>
                             </div>
                           </div>
                         </div>
@@ -79,15 +111,7 @@
         <!-- Page body -->
         <div class="page-body">
           <div class="container-xl">
-            <div class="row">
-              <div class="col-lg">
-                <div class="card">
-                  <div
-                    class="list-group card-list-group accordion"
-                    id="generated-qr-codes"
-                  ></div>
-                </div>
-              </div>
+            <div class="row row-cards" id="generated-qr-codes">
             </div>
           </div>
         </div>
