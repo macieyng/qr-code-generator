@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>QR Code Generator</title>
+    <link rel="icon" type="image/x-icon" href="/img/favicon/favicon.ico" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@tabler/core@latest/dist/css/tabler.min.css"
+    />
+    <script src="https://unpkg.com/htmx.org@1.8.4"></script>
+    <script src="https://unpkg.com/htmx.org/dist/ext/client-side-templates.js"></script>
+    <script src="./nunjucks.js"></script>
+    <script src="./main.js"></script>
+  </head>
+
+  <body class="theme-light">
+    <div class="page">
+      <!-- Navbar -->
+      <header class="navbar navbar-expand-md navbar-light d-print-none">
+        <div class="container-xl">
+          <h1
+            class="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0 pe-md-3"
+          >
+            <a href="index.html">
+              <img
+                src="./img/logo.svg"
+                width="110"
+                height="32"
+                alt="Tabler"
+                class="navbar-brand-image"
+              />
+            </a>
+          </h1>
+          <h1>QR Code Generator</h1>
+        </div>
+      </header>
+      <div class="page-wrapper" hx-ext="client-side-templates">
+        <!-- Page header -->
+        <div class="page-header d-print-none">
+          <div class="container-xl">
+            <div class="row align-items-center">
+            </div>
+            <div class="row align-items-center mt-3">
+              <div class="col">
+                <h2 class="page-title">Created QR Codes</h2>
+                <div>
+                  <div
+                    hx-trigger="load, every 60s"
+                    hx-get=""
+                    nunjucks-template="qr-list"
+                    hx-target="#generated-qr-codes"
+                    hx-swap="innerHTML"
+                  ></div>
+                  <script id="qr-list" type="nunjucks">
+                    {% for item in items %}
+                      <div class="list-group-item accordion-item">
+                        <div class="row g-2 align-items-center">
+                          <div class="col-auto">
+                            <img src="data:image/png;base64,{{ item.image }}" class="rounded" alt="{{ item.target_url }}" width="40" height="40">
+                          </div>
+                          <div class="col">
+                            {{ item.target_url }}
+                            <div class="text-muted">
+                              Scan counter: {{ item.scan_counter }}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    {% endfor %}
+                  </script>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Page body -->
+        <div class="page-body">
+          <div class="container-xl">
+            <div class="row">
+              <div class="col-lg">
+                <div class="card">
+                  <div
+                    class="list-group card-list-group accordion"
+                    id="generated-qr-codes"
+                  ></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <footer class="footer footer-transparent d-print-none">
+          <div class="container-xl">
+            <div class="row text-center align-items-center flex-row-center">
+              <div class="col-lg-auto m-lg-auto">
+                <ul class="list-inline list-inline-dots mb-0">
+                  <li class="list-inline-item">
+                    Site powered by
+                    <a href="https://tabler.io/" class="link-secondary"
+                      >Tabler</a
+                    >
+                  </li>
+                  <li class="list-inline-item">
+                    Made with
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      class="icon text-pink icon-filled icon-inline"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      stroke-width="2"
+                      stroke="currentColor"
+                      fill="none"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                      <path
+                        d="M19.5 12.572l-7.5 7.428l-7.5 -7.428m0 0a5 5 0 1 1 7.5 -6.566a5 5 0 1 1 7.5 6.572"
+                      ></path>
+                    </svg>
+                    by
+                    <a href="https://github.com/macieyng"> macieyng </a>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          <hr />
+          <div class="container-xl">
+            <h4>Tabler footer</h4>
+            <div class="row text-center align-items-center flex-row-reverse">
+              <div class="col-lg-auto ms-lg-auto">
+                <ul class="list-inline list-inline-dots mb-0">
+                  <li class="list-inline-item">
+                    <a
+                      href="https://preview.tabler.io/docs/"
+                      class="link-secondary"
+                      >Documentation</a
+                    >
+                  </li>
+                  <li class="list-inline-item">
+                    <a
+                      href="https://preview.tabler.io/license.html"
+                      class="link-secondary"
+                      >License</a
+                    >
+                  </li>
+                  <li class="list-inline-item">
+                    <a
+                      href="https://github.com/tabler/tabler"
+                      target="_blank"
+                      class="link-secondary"
+                      rel="noopener"
+                      >Source code</a
+                    >
+                  </li>
+                  <li class="list-inline-item">
+                    <a
+                      href="https://github.com/sponsors/codecalm"
+                      target="_blank"
+                      class="link-secondary"
+                      rel="noopener"
+                    >
+                      <!-- Download SVG icon from http://tabler-icons.io/i/heart -->
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="icon text-pink icon-filled icon-inline"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        stroke-width="2"
+                        stroke="currentColor"
+                        fill="none"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <path
+                          stroke="none"
+                          d="M0 0h24v24H0z"
+                          fill="none"
+                        ></path>
+                        <path
+                          d="M19.5 12.572l-7.5 7.428l-7.5 -7.428m0 0a5 5 0 1 1 7.5 -6.566a5 5 0 1 1 7.5 6.572"
+                        ></path>
+                      </svg>
+                      Sponsor
+                    </a>
+                  </li>
+                </ul>
+              </div>
+              <div class="col-12 col-lg-auto mt-3 mt-lg-0">
+                <ul class="list-inline list-inline-dots mb-0">
+                  <li class="list-inline-item">
+                    Copyright © 2022
+                    <a href="https://tabler.io/" class="link-secondary"
+                      >Tabler</a
+                    >. All rights reserved.
+                  </li>
+                  <li class="list-inline-item">
+                    <a
+                      href="./changelog.html"
+                      class="link-secondary"
+                      rel="noopener"
+                    >
+                      v1.0.0-beta16
+                    </a>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </footer>
+      </div>
+    </div>
+    <!-- Libs JS -->
+    <!-- Tabler Core -->
+    <script src="https://cdn.jsdelivr.net/npm/@tabler/core@latest/dist/js/tabler.min.js"></script>
+  </body>
+</html>
