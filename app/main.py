@@ -7,7 +7,7 @@ from http import HTTPStatus
 from datetime import datetime
 import json
 import qrcode
-from fastapi import FastAPI, Request, Response
+from fastapi import FastAPI, Request, Response, Depends
 from fastapi.responses import RedirectResponse, StreamingResponse
 from pydantic import BaseModel as PydanticBaseModel, Field, root_validator
 from pymongo import MongoClient
@@ -20,23 +20,30 @@ from fastapi.middleware.cors import CORSMiddleware
 import logging
 
 from functools import partial
+from fastapi.middleware.cors import CORSMiddleware
 
 
 app = FastAPI()
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "https://qr-code-generator-3p8.pages.dev", 
+        "http://qr-code-generator-3p8.pages.dev"
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-client: MongoClient = MongoClient(os.getenv("MONGO_DB_CONNECTION_STRING"))
-db = client.get_database("qr_codes")
-collection = db.get_collection("qr_codes")
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+
+
+def get_qr_collection():
+    client: MongoClient = MongoClient(os.getenv("MONGO_DB_CONNECTION_STRING"))
+    db = client.get_database("qr_codes")
+    return db.get_collection("qr_codes")
 
 
 def hash_string(string_in: str):
@@ -89,7 +96,7 @@ class CreateQRCodeAPIRequest(BaseModel):
 
 
 class GetQRCodeAPIResponse(BaseModel):
-    name: str = None
+    name: str
     qr_link: str
     target_url: str
     scan_counter: int = 0
@@ -175,15 +182,11 @@ class RGBColor(tuple):
 class HEXColor(str):
     def __new__(cls, value):
         if not isinstance(value, str):
-            logger.info(type(value))
             raise TypeError("Expected string")
         if not value.startswith("#"):
-            logger.info(value)
             raise ValueError("Expected string starting with #")
         if len(value) != 7:
-            logger.info(value)
             raise ValueError("Expected string of length 7")
-        logger.info(value)
         return str.__new__(cls, value)
 
     def __repr__(self) -> str:
@@ -198,7 +201,6 @@ class HEXColor(str):
 
 def hex_to_rgb(*args) -> Optional[RGBColor]:
     hex_color = args[0]
-    logger.info(hex_color)
     if not hex_color:
         return None
     return HEXColor(hex_color).to_rgb_color()
@@ -302,8 +304,10 @@ def make_qr_code(
 
 
 @app.get("/qr", response_model=ListQRCodeAPIResponse)
-async def fetch_qr_codes(request: Request, page: int = 1, page_size: int = 10):
+async def fetch_qr_codes(request: Request, page: int = 1, page_size: int = 10, collection = Depends(get_qr_collection)):
+    logger.info("Fetching QR codes")
     results = list(collection.find().skip((page - 1) * page_size).limit(page_size))
+    logger.info("Found %s QR codes", len(results))
     return ListQRCodeAPIResponse(
         items=[GetQRCodeAPIResponse(**result) for result in results],
         page=page,
@@ -330,7 +334,7 @@ def get_qr_code_preview(
 
 
 @app.post("/qr", response_model=GetQRCodeAPIResponse)
-async def create_qr_code(payload: CreateQRCodeAPIRequest, request: Request):
+async def create_qr_code(payload: CreateQRCodeAPIRequest, request: Request, collection = Depends(get_qr_collection)):
     name = payload.name or extract_domain_from_url(payload.target_url)
     img_name = hash_string(payload.target_url)
     img_buffer = make_qr_code(
@@ -353,7 +357,7 @@ async def create_qr_code(payload: CreateQRCodeAPIRequest, request: Request):
 
 
 @app.get("/qr/{identifier}")
-async def get_qr_data(identifier: str, request: Request):
+async def get_qr_data(identifier: str, request: Request, collection = Depends(get_qr_collection)):
     document = collection.find_one({"identifier": identifier})
     if not document:
         return Response(status_code=HTTPStatus.NOT_FOUND)
@@ -361,7 +365,7 @@ async def get_qr_data(identifier: str, request: Request):
 
 
 @app.get("/qr/{identifier}/png")
-async def get_qr_data(identifier: str, request: Request):
+async def get_qr_data(identifier: str, request: Request, collection = Depends(get_qr_collection)):
     document = collection.find_one({"identifier": identifier})
     if not document:
         return Response(status_code=HTTPStatus.NOT_FOUND)
@@ -371,7 +375,7 @@ async def get_qr_data(identifier: str, request: Request):
 
 
 @app.get("/scan/{identifier}")
-async def redirect_scan(identifier: str, request: Request):
+async def redirect_scan(identifier: str, request: Request, collection = Depends(get_qr_collection)):
     document = collection.find_one({"identifier": identifier})
     if not document:
         return Response(status_code=HTTPStatus.NOT_FOUND)

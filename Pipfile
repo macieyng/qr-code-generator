@@ -11,6 +11,7 @@ uvicorn = "*"
 pydantic = "*"
 qrcode = {extras = ["pil"], version = "*"}
 pymongo = "*"
+azure-functions = "*"
 
 [dev-packages]
 black = "*"
