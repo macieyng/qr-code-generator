@@ -11,7 +11,6 @@ htmx.defineExtension('qr-form-controller', {
         animateCSS('#form-row', 'fadeOut').then((message) => {
           evt.target.lastElementChild.classList.add("d-none");
           evt.target.parentElement.parentElement.classList.add("d-none");
-          console.log(evt.target.parentElement.parentElement);
           evt.target[7].classList.remove("disabled");
           animateCSS('#new-qr', 'fadeIn')
           document.querySelector("#new-qr").classList.remove("d-none");
@@ -22,7 +21,6 @@ htmx.defineExtension('qr-form-controller', {
   
   encodeParameters : function(xhr, parameters, elt) {
       xhr.overrideMimeType('text/json');
-      console.log(parameters);
       let parsedParameters = parseDotKeysAsNestedObjects(parameters);
       return (JSON.stringify(parsedParameters));
   }
@@ -76,11 +74,6 @@ function getFavicon(url, size) {
 nunjucksEnv.addFilter('shortenUrl', shortenUrl);
 nunjucksEnv.addFilter('getFavicon', getFavicon);
 
-htmx.logger = function(elt, event, data) {
-  console.log(event, elt, data);
-}
-
-
 htmx.defineExtension('qr-preview', {
   onEvent: function (name, evt) {
     if (name === "htmx:configRequest") {
@@ -95,7 +88,6 @@ htmx.defineExtension('qr-preview', {
         }
       }
       evt.detail.path += "?" + objectToUrlParamsRecursive(previewParams);
-      console.log(evt.detail.path);
     }
   },
 });

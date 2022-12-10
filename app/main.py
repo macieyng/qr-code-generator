@@ -6,7 +6,6 @@ from enum import Enum
 from http import HTTPStatus
 from datetime import datetime
 import json
-from typing import Self
 import qrcode
 from fastapi import FastAPI, Request, Response
 from fastapi.responses import RedirectResponse, StreamingResponse
@@ -15,7 +14,7 @@ from pymongo import MongoClient
 from qrcode.image.styledpil import StyledPilImage
 from qrcode.image.styles import moduledrawers
 from qrcode.image.styles import colormasks
-import time
+from typing import Optional
 
 from fastapi.middleware.cors import CORSMiddleware
 import logging
@@ -75,18 +74,18 @@ class QRCodeMasks(str, Enum):
 
 class Color(BaseModel):
     background: str
-    primary: str | None
-    secondary: str | None
+    primary: Optional[str]
+    secondary: Optional[str]
 
 
 class CreateQRCodeAPIRequest(BaseModel):
     name: str
     target_url: str
-    drawer: QRCodeDrawers | None
-    mask: QRCodeMasks | None
-    primary_color: str | None
-    secondary_color: str | None
-    background_color: str | None
+    drawer: Optional[QRCodeDrawers]
+    mask: Optional[QRCodeMasks]
+    primary_color: Optional[str]
+    secondary_color: Optional[str]
+    background_color: Optional[str]
 
 
 class GetQRCodeAPIResponse(BaseModel):
@@ -110,8 +109,8 @@ class GetPreviewAPIResponse(BaseModel):
 
 
 class GetPreviewAPIRequest(BaseModel):
-    drawer: QRCodeDrawers | None
-    mask: QRCodeMasks | None
+    drawer: Optional[QRCodeDrawers]
+    mask: Optional[QRCodeMasks]
 
 
 class QRCodeEntryDB(BaseModel):
@@ -128,7 +127,7 @@ class PageResponse(BaseModel):
     items: list[BaseModel]
     page: int
     page_size: int
-    next_page: int | None
+    next_page: Optional[int]
 
 
 class ListQRCodeAPIResponse(PageResponse):
@@ -169,7 +168,7 @@ class RGBColor(tuple):
         return self.__repr__()
 
     @classmethod
-    def from_hex_color(cls, hex_color: str) -> Self:
+    def from_hex_color(cls, hex_color: str) -> "RGBColor":
         return HEXColor(hex_color).to_rgb_color()
 
 
@@ -197,7 +196,7 @@ class HEXColor(str):
         return RGBColor((int(self[1:3], 16), int(self[3:5], 16), int(self[5:7], 16)))
 
 
-def hex_to_rgb(*args) -> RGBColor | None:
+def hex_to_rgb(*args) -> Optional[RGBColor]:
     hex_color = args[0]
     logger.info(hex_color)
     if not hex_color:
@@ -217,10 +216,10 @@ def map_drawers(drawer: QRCodeDrawers) -> moduledrawers.QRModuleDrawer:
 
 
 def mask_factory(
-    mask: QRCodeMasks | None = None,
-    background_color: str | None = None,
-    primary_color: str | None = None,
-    secondary_color: str | None = None,
+    mask: Optional[QRCodeMasks] = None,
+    background_color: Optional[str] = None,
+    primary_color: Optional[str] = None,
+    secondary_color: Optional[str] = None,
 ) -> colormasks.QRColorMask:
     return {
         QRCodeMasks.HORIZONTAL_GRADIENT: partial(
@@ -267,11 +266,11 @@ def mask_factory(
 
 def make_qr_code(
     data: str,
-    drawer: QRCodeDrawers | None = None,
-    mask: QRCodeMasks | None = None,
-    background_color: str | None = None,
-    primary_color: str | None = None,
-    secondary_color: str | None = None,
+    drawer: Optional[QRCodeDrawers] = None,
+    mask: Optional[QRCodeMasks] = None,
+    background_color: Optional[str] = None,
+    primary_color: Optional[str] = None,
+    secondary_color: Optional[str] = None,
 ):
     primary_color = (
         RGBColor.from_hex_color(primary_color) if primary_color else RGBColor((0, 0, 0))
@@ -316,11 +315,11 @@ async def fetch_qr_codes(request: Request, page: int = 1, page_size: int = 10):
 @app.get("/qr-preview", response_model=GetPreviewAPIResponse)
 def get_qr_code_preview(
     request: Request,
-    drawer: QRCodeDrawers | None = None,
-    mask: QRCodeMasks | None = None,
-    background_color: str | None = None,
-    primary_color: str | None = None,
-    secondary_color: str | None = None,
+    drawer: Optional[QRCodeDrawers] = None,
+    mask: Optional[QRCodeMasks] = None,
+    background_color: Optional[str] = None,
+    primary_color: Optional[str] = None,
+    secondary_color: Optional[str] = None,
 ):
     img_buffer = make_qr_code(
         request.base_url, drawer, mask, background_color, primary_color, secondary_color
