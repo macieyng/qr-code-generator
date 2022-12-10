@@ -58,7 +58,7 @@
               <div class="col-md-8 col-12">
                 <form 
                   class="card" 
-                  hx-post="http://127.0.0.1:8000/qr" 
+                  hx-post="https://queue-r.azurewebsites.net/qr" 
                   hx-target="#new-qr" 
                   hx-ext="qr-form-controller"
                   nunjucks-template="new-qr-template"
@@ -70,7 +70,7 @@
                   <div 
                     class="card-body"
                     hx-trigger="load"
-                    hx-get="http://127.0.0.1:8000/qr-preview"
+                    hx-get="https://queue-r.azurewebsites.net/qr-preview"
                     nunjucks-template="qr-preview-template"
                     hx-target="#qr-preview"
                     hx-swap="innerHTML"
@@ -89,7 +89,7 @@
                           <label for="drawer" class="form-label">Drawer</label>
                           <select class="form-select" id="drawer" name="drawer"
                           hx-trigger="change"
-                          hx-get="http://127.0.0.1:8000/qr-preview"
+                          hx-get="https://queue-r.azurewebsites.net/qr-preview"
                           nunjucks-template="qr-preview-template"
                           hx-target="#qr-preview"
                           hx-swap="innerHTML"
@@ -106,7 +106,7 @@
                       <div class="col-6 mb-3">
                           <label for="mask" class="form-label">Mask</label>
                           <select class="form-select" id="mask" name="mask" hx-trigger="change"
-                          hx-get="http://127.0.0.1:8000/qr-preview"
+                          hx-get="https://queue-r.azurewebsites.net/qr-preview"
                           nunjucks-template="qr-preview-template"
                           hx-target="#qr-preview"
                           hx-swap="innerHTML"
@@ -122,7 +122,7 @@
                       <div class="col-4 mb-3">
                           <label for="color" class="form-label">Primary Color</label>
                           <input type="color" class="form-control form-control-color" id="color" name="primary_color" value="#00d5ff" hx-trigger="change"
-                          hx-get="http://127.0.0.1:8000/qr-preview"
+                          hx-get="https://queue-r.azurewebsites.net/qr-preview"
                           nunjucks-template="qr-preview-template"
                           hx-target="#qr-preview"
                           hx-swap="innerHTML"
@@ -131,7 +131,7 @@
                       <div class="col-4 mb-3">
                         <label for="color" class="form-label">Secondary Color</label>
                         <input type="color" class="form-control form-control-color" id="color" name="secondary_color" value="#00ff4c" hx-trigger="change"
-                        hx-get="http://127.0.0.1:8000/qr-preview"
+                        hx-get="https://queue-r.azurewebsites.net/qr-preview"
                         nunjucks-template="qr-preview-template"
                         hx-target="#qr-preview"
                         hx-swap="innerHTML"
@@ -140,7 +140,7 @@
                       <div class="col-4 mb-3">
                         <label for="color" class="form-label">Background Color</label>
                         <input type="color" class="form-control form-control-color" id="color" name="background_color" value="#ffffff" hx-trigger="change"
-                        hx-get="http://127.0.0.1:8000/qr-preview"
+                        hx-get="https://queue-r.azurewebsites.net/qr-preview"
                         nunjucks-template="qr-preview-template"
                         hx-target="#qr-preview"
                         hx-swap="innerHTML"
@@ -230,7 +230,7 @@
                 <div>
                   <div
                     hx-trigger="load"
-                    hx-get="http://127.0.0.1:8000/qr?page=1&page_size=10"
+                    hx-get="https://queue-r.azurewebsites.net/qr?page=1&page_size=10"
                     nunjucks-template="qr-list"
                     hx-target="#generated-qr-codes"
                     hx-swap="innerHTML"
@@ -279,7 +279,7 @@
                         <span
                           id="{{ next_page }}-{{ page_size }}"
                           class="w-0 p-0"
-                          hx-get="http://127.0.0.1:8000/qr?page={{ next_page }}&page_size={{ page_size }}"
+                          hx-get="https://queue-r.azurewebsites.net/qr?page={{ next_page }}&page_size={{ page_size }}"
                           hx-trigger="revealed"
                           hx-swap="beforeend"
                           nunjucks-template="qr-list"

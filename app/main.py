@@ -37,13 +37,14 @@ app.add_middleware(
 )
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
+logger.setLevel(logging.DEBUG)
+logging.getLogger("pymongo").setLevel(logging.DEBUG)
 
 
-def get_qr_collection():
-    client: MongoClient = MongoClient(os.getenv("MONGO_DB_CONNECTION_STRING"))
-    db = client.get_database("qr_codes")
-    return db.get_collection("qr_codes")
+
+client: MongoClient = MongoClient(os.getenv("MONGO_DB_CONNECTION_STRING"))
+db = client.get_database("qr_codes")
+collection = db.get_collection("qr_codes")
 
 
 def hash_string(string_in: str):
@@ -304,7 +305,7 @@ def make_qr_code(
 
 
 @app.get("/qr", response_model=ListQRCodeAPIResponse)
-async def fetch_qr_codes(request: Request, page: int = 1, page_size: int = 10, collection = Depends(get_qr_collection)):
+async def fetch_qr_codes(request: Request, page: int = 1, page_size: int = 10):
     logger.info("Fetching QR codes")
     results = list(collection.find().skip((page - 1) * page_size).limit(page_size))
     logger.info("Found %s QR codes", len(results))
@@ -325,6 +326,7 @@ def get_qr_code_preview(
     primary_color: Optional[str] = None,
     secondary_color: Optional[str] = None,
 ):
+    logger.info("Creating QR code preview")
     img_buffer = make_qr_code(
         request.base_url, drawer, mask, background_color, primary_color, secondary_color
     )
@@ -334,7 +336,8 @@ def get_qr_code_preview(
 
 
 @app.post("/qr", response_model=GetQRCodeAPIResponse)
-async def create_qr_code(payload: CreateQRCodeAPIRequest, request: Request, collection = Depends(get_qr_collection)):
+async def create_qr_code(payload: CreateQRCodeAPIRequest, request: Request):
+    logger.info("Creating QR code")
     name = payload.name or extract_domain_from_url(payload.target_url)
     img_name = hash_string(payload.target_url)
     img_buffer = make_qr_code(
@@ -357,7 +360,8 @@ async def create_qr_code(payload: CreateQRCodeAPIRequest, request: Request, coll
 
 
 @app.get("/qr/{identifier}")
-async def get_qr_data(identifier: str, request: Request, collection = Depends(get_qr_collection)):
+async def get_qr_data(identifier: str, request: Request):
+    logger.info("Fetching QR code %s", identifier)
     document = collection.find_one({"identifier": identifier})
     if not document:
         return Response(status_code=HTTPStatus.NOT_FOUND)
@@ -365,7 +369,8 @@ async def get_qr_data(identifier: str, request: Request, collection = Depends(ge
 
 
 @app.get("/qr/{identifier}/png")
-async def get_qr_data(identifier: str, request: Request, collection = Depends(get_qr_collection)):
+async def get_qr_data(identifier: str, request: Request):
+    logger.info("Fetching QR code PNG %s", identifier)
     document = collection.find_one({"identifier": identifier})
     if not document:
         return Response(status_code=HTTPStatus.NOT_FOUND)
@@ -375,7 +380,8 @@ async def get_qr_data(identifier: str, request: Request, collection = Depends(ge
 
 
 @app.get("/scan/{identifier}")
-async def redirect_scan(identifier: str, request: Request, collection = Depends(get_qr_collection)):
+async def redirect_scan(identifier: str, request: Request):
+    logger.info("QR code %s was scanned", identifier)
     document = collection.find_one({"identifier": identifier})
     if not document:
         return Response(status_code=HTTPStatus.NOT_FOUND)
